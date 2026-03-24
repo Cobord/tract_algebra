@@ -10,5 +10,3 @@ pub mod regular_partial_field;
 pub mod tract_grassmannian;
 pub mod tract_projective_variety;
 pub mod tropical_tract;
-
-fn main() {}
