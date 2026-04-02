@@ -1,6 +1,6 @@
 use std::{
     collections::HashMap,
-    ops::{Add, AddAssign, Mul, MulAssign},
+    ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign},
 };
 
 use num::Zero;
@@ -12,6 +12,25 @@ where
     Coeffs: Add<Coeffs, Output = Coeffs> + AddAssign<Coeffs> + Clone,
 {
     pub(crate) map: HashMap<Set, Coeffs>,
+}
+
+impl<Set, Coeffs> LinearCombination<Set, Coeffs>
+where
+    Set: std::hash::Hash + Eq,
+    Coeffs: Add<Coeffs, Output = Coeffs> + AddAssign<Coeffs> + Clone + Zero,
+{
+    pub fn simplify(&mut self) {
+        self.map.retain(|_, v| !v.is_zero());
+    }
+
+    pub fn rescale(&mut self, factor: &Coeffs)
+    where
+        Coeffs: MulAssign<Coeffs>,
+    {
+        for v in self.map.values_mut() {
+            *v *= factor.clone();
+        }
+    }
 }
 
 impl<Set, Coeffs> AddAssign<Self> for LinearCombination<Set, Coeffs>
@@ -38,6 +57,42 @@ where
 
     fn add(mut self, rhs: Self) -> Self::Output {
         self += rhs;
+        self
+    }
+}
+
+impl<Set, Coeffs> SubAssign<Self> for LinearCombination<Set, Coeffs>
+where
+    Set: std::hash::Hash + Eq,
+    Coeffs: Add<Coeffs, Output = Coeffs>
+        + AddAssign<Coeffs>
+        + Clone
+        + SubAssign<Coeffs>
+        + Neg<Output = Coeffs>,
+{
+    fn sub_assign(&mut self, rhs: Self) {
+        for (key, v) in rhs.map {
+            self.map
+                .entry(key)
+                .and_modify(|old_value| *old_value -= v.clone())
+                .or_insert(-v);
+        }
+    }
+}
+
+impl<Set, Coeffs> Sub<Self> for LinearCombination<Set, Coeffs>
+where
+    Set: std::hash::Hash + Eq,
+    Coeffs: Add<Coeffs, Output = Coeffs>
+        + AddAssign<Coeffs>
+        + Clone
+        + SubAssign<Coeffs>
+        + Neg<Output = Coeffs>,
+{
+    type Output = Self;
+
+    fn sub(mut self, rhs: Self) -> Self::Output {
+        self -= rhs;
         self
     }
 }

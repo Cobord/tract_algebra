@@ -2,6 +2,7 @@
 
 pub mod absolute_value_tract;
 pub mod baker_tract;
+pub mod binomial_edge_ideal;
 pub mod field_tract;
 pub mod krasner;
 pub mod linear_combination;

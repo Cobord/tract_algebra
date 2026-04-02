@@ -82,6 +82,15 @@ impl<const K_VARIABLES: usize, const HOMOGENEITY: usize, T: BakerBowlerTract>
         Ok(to_return)
     }
 
+    pub fn invalid_relation(&self) -> Result<(), &LinearCombination<[usize; HOMOGENEITY], i64>> {
+        for relation in &self.relations {
+            if !self.relation_satisfied(relation) {
+                return Err(relation);
+            }
+        }
+        Ok(())
+    }
+
     /// Returns the coordinate at position `idx` (cloned).
     #[must_use]
     pub fn get_coordinate(&self, idx: usize) -> T {
